@@ -21,7 +21,7 @@ Contém a implementação de um agente em Python utilizando Jupyter Notebook e a
 ### ⚙️ Solução em n8n (`/n8n`)
 Contém a implementação de um agente _low-code_ na plataforma n8n, projetado para consultar informações de Notas Fiscais (NF) que estão armazenadas em um banco de dados PostgreSQL (Supabase).
 
-* **[➡️ Acesse o README da solução em n8n para instruções detalhadas](./n8n/README.md)**
+* **[➡️ Acesse o README da solução em n8n para instruções detalhadas](./n8n/readme.md)**
 
 ---
 
