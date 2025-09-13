@@ -1,0 +1,204 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        100
+      ],
+      "id": "a6514629-49d5-44ae-be24-2fa7de07ff0d",
+      "name": "When chat message received",
+      "webhookId": "9dd6b60e-6c9f-477d-bb5f-56626ccd1b6a"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=Voce é um agente especialista em consultar dados de Notas Fiscais, e repsonder as duvidas dos usuarios.\n\nAs Notas fiscais podem ser acessadas pela Tool Postgres.\n\nDentro da Tool Postgres, existem varios cabeçalhos de Notas fiscais, cada um com sua \"CHAVE_DE_ACESSO\". \nVocê é um agente especialista em análise e consulta de dados fiscais.\n\nSeu papel é responder, com precisão, clareza e base factual, qualquer pergunta relacionada aos dados disponíveis nas tabelas de Notas Fiscais. Para isso, utilize exclusivamente as ferramentas conectadas: nfs_cabecalho e nfs_itens.\n\n---\n\n📌 As tabelas contêm os seguintes tipos de informações:\n\n🧾 nfs_cabecalho:\nContém dados gerais de cada nota fiscal, como:\n- CHAVE_DE_ACESSO (chave primária)\n- MODELO, SÉRIE e NÚMERO da nota\n- NATUREZA_DA_OPERAÇÃO\n- DATA_EMISSÃO e VALOR_NOTA_FISCAL (casa decimal separada por .)\n- CPF_CNPJ_EMITENTE, RAZÃO_SOCIAL_EMITENTE, UF/MUNICÍPIO\n- CNPJ_DESTINATÁRIO e NOME_DESTINATÁRIO\n- DADOS DE OPERAÇÃO: CONSUMIDOR_FINAL, DESTINO_DA_OPERAÇÃO, PRESENÇA_DO_COMPRADOR\n\n📦 nfs_itens:\nContém os itens associados a cada nota fiscal, vinculados por CHAVE_DE_ACESSO. Inclui:\n- DESCRIÇÃO DO PRODUTO/SERVIÇO\n- CÓDIGO NCM/SH, CFOP, UNIDADE, QUANTIDADE, VALOR UNITÁRIO, VALOR TOTAL\n- NÚMERO PRODUTO (posição do item na nota)\n\n---\n\n🧠 Comportamento esperado:\n- Use somente os dados disponíveis nas ferramentas (não invente valores).\n- Caso precise cruzar dados entre as duas tabelas, utilize a coluna CHAVE_DE_ACESSO como referência.\n- Sempre que uma pergunta envolver produtos, serviços, quantidades ou valores por item, consulte a tabela nfs_itens.\n- Quando a pergunta for sobre data de emissão, cidade, total da nota, emitente ou destinatário, utilize a tabela nfs_cabecalho.\n\n---\n\n💬 Exemplos de perguntas que você deve ser capaz de responder:\n1. *Quantas notas fiscais foram emitidas em janeiro de 2024?\n2. **Qual foi o valor total das notas emitidas pelo CNPJ 05082751000118?\n3. **Quais produtos estão descritos na nota fiscal número 21953?\n4. **Qual o valor total em reais dos itens vendidos com CFOP 5405?\n5. **Quais foram os 5 produtos mais frequentes nas notas emitidas para o DF?\n6. **Quais municípios mais emitiram notas com presença do comprador = ‘1’?\n7. **Existe alguma nota onde o valor do item não bate com o valor total da nota?\n8. **Quais empresas emitiram notas para a Universidade Federal do Recôncavo da Bahia?\n\n---\n\n🛑 Regras:\n- Nunca gere dados que não estejam presentes nas tabelas.\n- Se uma informação não for possível de responder com os dados atuais, diga claramente: *“Não é possível responder com os dados disponíveis.”**\n- Em caso de múltiplas tabelas, informe sempre o cruzamento feito.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        80,
+        100
+      ],
+      "id": "31385c97-6307-46b1-9fc6-e3f3ea4fa7e6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utilize essa ferramenta para consultar a base de cabeçalhos de notas fiscais",
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "nfs_cabecalho",
+          "mode": "list",
+          "cachedResultName": "nfs_cabecalho"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        440,
+        280
+      ],
+      "id": "06ca88a5-cd1b-4143-8889-c06803ac5998",
+      "name": "nfs_cabecalho",
+      "credentials": {
+        "postgres": {
+          "id": "Er4vaIJS1oG5Lccj",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        40,
+        300
+      ],
+      "id": "f51e5a33-afd4-48b1-b095-973055a8a137",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "LHElUPRbyy9R7YCD",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utilize essa ferramenta para consultar a base de itens de notas fiscais",
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "nfs_itens",
+          "mode": "list",
+          "cachedResultName": "nfs_itens"
+        },
+        "returnAll": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        620,
+        240
+      ],
+      "id": "7d715d70-3fe6-4d88-a953-ff9432572f79",
+      "name": "nfs_itens",
+      "credentials": {
+        "postgres": {
+          "id": "Er4vaIJS1oG5Lccj",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 8
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        320
+      ],
+      "id": "0099c95f-3b23-4b6e-9237-5544cdf8f5bb",
+      "name": "Simple Memory"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "nfs_cabecalho": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "nfs_itens": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2edbbf95239d02eb699f6398ee4c1d6e7e0f1fc9b989dfb1b2dcf89d6e221c1b"
+  }
+}
